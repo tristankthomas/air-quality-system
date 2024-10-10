@@ -1,17 +1,17 @@
 <template>
-  <div class="temperature-display">
-    <h1>Current Temperature</h1>
-    <p>{{ temperature }} °C</p>
+  <div class="gas-display">
+    <h1>Current Gas Reading</h1>
+    <p>{{ gas }} °C</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'TemperatureDisplay',
+  name: 'GasDisplay',
   data() {
     return {
       // Set a dummy temperature value for testing
-      temperature: 25 // You can change this value to test different temperatures
+      gas: 25 // You can change this value to test different temperatures
     };
   }
 }

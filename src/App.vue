@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <TemperatureDisplay />
+    <GasDisplay />
   </div>
 </template>
 
 <script>
-import TemperatureDisplay from './components/TemperatureDisplay.vue';
+import GasDisplay from './components/GasDisplay.vue';
 
 export default {
   name: 'App',
   components: {
-    TemperatureDisplay
+    GasDisplay
   }
 }
 </script>
