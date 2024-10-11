@@ -8,7 +8,8 @@ device = "ttyUSB0"
 
 origins = [
     "http://localhost:8080",  # Allow your Vue.js app running locally
-    "http://172.20.10.2:8080", # Allow your Vue.js app running on Raspberry Pi
+    "http://172.20.10.2:8080", # Allow your Vue.js app running on Raspberry Pii
+    "http://192.168.0.245:8080"
 ]
 
 app.add_middleware(

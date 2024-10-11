@@ -10,7 +10,7 @@ export default {
   },
   methods: {
     fetchGasReading() {
-      axios.get('http://172.20.10.2:8000/gas-reading')
+      axios.get('http://192.168.0.245:8000/gas-reading')
         .then(response => {
           this.gasReading = response.data.gas;
         })
