@@ -5,7 +5,7 @@ export default {
   name: 'GasReading',
   data() {
     return {
-      gasReading: null,
+      sensorData: null,  // Changed from gasReading to sensorData for clarity
       socket: null,
     };
   },
@@ -16,7 +16,12 @@ export default {
 
       // Listen for messages from the WebSocket
       this.socket.onmessage = (event) => {
-        this.gasReading = event.data;
+        // Parse the received JSON data
+        try {
+          this.sensorData = JSON.parse(event.data);
+        } catch (e) {
+          console.error('Failed to parse JSON:', e);
+        }
       };
 
       // Handle WebSocket connection errors
@@ -31,12 +36,12 @@ export default {
     }
   },
   mounted() {
-    // Fetch gas reading when the component is mounted
+    // Establish WebSocket connection when the component is mounted
     this.connectWebSocket();
   },
   beforeUnmount() {
     if (this.socket) {
-        this.socket.close();
+      this.socket.close();
     }
   }
 };
@@ -45,18 +50,21 @@ export default {
 <template>
   <div>
     <h1>Gas Reading from MQ-2 Sensor</h1>
-    <p v-if="gasReading">Gas Reading: {{ gasReading }}</p>
+    <div v-if="sensorData">
+      <p>Gas: {{ sensorData.gas }}</p>
+      <p>Air: {{ sensorData.air }}</p>
+      <p>Temperature: {{ sensorData.temp }} °C</p>
+    </div>
     <p v-else>Loading...</p>
   </div>
 </template>
-
 
 <style scoped>
 h1 {
   margin: 20px 0;
 }
 p {
-  font-size: 24px; /* Optional: increase font size for the temperature display */
+  font-size: 24px; /* Optional: increase font size for the display */
   color: #42b983; /* Optional: color for better visibility */
 }
 </style>

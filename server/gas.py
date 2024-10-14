@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 import serial
 import threading
+import json
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -8,7 +9,7 @@ device = "ttyUSB0"
 
 origins = [
     "http://localhost:8080",  # Allow your Vue.js app running locally
-    "http://172.20.10.2:8080", # Allow your Vue.js app running on Raspberry Pii
+    "http://172.20.10.2:8080",  # Allow your Vue.js app running on Raspberry Pi
     "http://192.168.0.245:8080"
 ]
 
@@ -23,19 +24,17 @@ app.add_middleware(
 # Open the serial port to read data from the Arduino
 ser = serial.Serial(f'/dev/{device}', 9600, timeout=1)
 
-
-
 # Variable to store gas readings
-gas_reading = None
+sensor_data = None
 
 # Function to continuously read from the serial port
 def read_gas_sensor():
-    global gas_reading
+    global sensor_data
     while True:
         try:
             line = ser.readline().decode('utf-8').strip()  # Read data from Arduino
             if line:
-                gas_reading = line  # Store the latest gas sensor reading
+                sensor_data = line  # Store the latest sensor data
         except serial.SerialException:
             print("Serial connection issue")
             break
@@ -44,7 +43,6 @@ def read_gas_sensor():
 thread = threading.Thread(target=read_gas_sensor)
 thread.daemon = True
 thread.start()
-
 
 class ConnectionManager:
     def __init__(self):
@@ -63,23 +61,21 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-
-
 # WebSocket route to send gas sensor data in real-time
 @app.websocket("/ws/gas-sensor")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            if gas_reading:
-                await manager.send_data(gas_reading)
+            if sensor_data:
+                await manager.send_data(sensor_data)  # Send the JSON data as received
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# API route to return the gas reading
+# API route to return the latest sensor data
 @app.get("/gas-reading")
 def get_gas_reading():
-    if gas_reading:
-        print(gas_reading)
-        return {"gas": gas_reading}
-    return {"message": "No gas data available yet"}
+    if sensor_data:
+        print(sensor_data)
+        return {"data": json.loads(sensor_data)}  # Return the parsed JSON data
+    return {"message": "No sensor data available yet"}
