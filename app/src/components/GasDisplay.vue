@@ -1,32 +1,43 @@
 <script>
-import axios from 'axios';
+// import axios from 'axios';
 
 export default {
   name: 'GasReading',
   data() {
     return {
       gasReading: null,
+      socket: null,
     };
   },
   methods: {
-    fetchGasReading() {
-      axios.get('http://192.168.0.245:8000/gas-reading')
-        .then(response => {
-          this.gasReading = response.data.gas;
-        })
-        .catch(error => {
-          console.error('Error fetching gas reading:', error);
-        });
+    connectWebSocket() {
+      // Replace with your WebSocket URL
+      this.socket = new WebSocket('ws://192.168.0.245:8000/ws/gas-sensor');
+
+      // Listen for messages from the WebSocket
+      this.socket.onmessage = (event) => {
+        this.gasReading = event.data;
+      };
+
+      // Handle WebSocket connection errors
+      this.socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      // Handle WebSocket closure
+      this.socket.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
     }
   },
   mounted() {
     // Fetch gas reading when the component is mounted
-    this.fetchGasReading();
-
-    // Optionally, poll for new data every 2 seconds
-    setInterval(() => {
-      this.fetchGasReading();
-    }, 2000);
+    this.connectWebSocket();
+  },
+  beforeUnmount() {
+    if (this.socket) {
+        this.socket.close();
+    }
   }
 };
 </script>
