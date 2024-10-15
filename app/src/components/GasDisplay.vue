@@ -9,6 +9,7 @@ export default {
       intervalId: null,  // Store the interval ID for clearing later
       ws: null,
       ipAddress: '172.20.10.2',
+      wsMessage: '',
     };
   },
   methods: {
@@ -30,6 +31,7 @@ export default {
       this.ws.onmessage = (event) => {
         const message = event.data;
         console.log('Received WebSocket message:', message);
+        this.wsMessage = message;
         // You can handle the message, e.g., display an alert or update the UI
       };
 
@@ -74,7 +76,7 @@ export default {
       <p>Temperature: {{ sensorData.data.temp }} °C</p>
     </div>
     <p v-else>Loading...</p>
-
+    <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
   </div>
 </template>
 

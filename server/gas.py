@@ -50,6 +50,8 @@ def read_gas_sensor():
             print("Serial connection issue")
             break
 
+loop = asyncio.get_event_loop()
+
 def check_gas_level(sensor_data):
     try:
         data_json = json.loads(sensor_data)
@@ -58,7 +60,10 @@ def check_gas_level(sensor_data):
             #make_twilio_call()  # Trigger Twilio call
             #asyncio.create_task(notify_alerts("Warning! Gas levels are too high!"))  # Send alert notification
             #time.sleep(300)  # Sleep for 5 minutes
+            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high!"), loop)
             print("Phone Call\n")
+        else:
+            asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level"), loop)
     except json.JSONDecodeError:
         print("Error decoding JSON from sensor")
 
@@ -106,7 +111,7 @@ async def websocket_alerts_endpoint(websocket: WebSocket):
     print("CONNECTED\n")
     try:
         while True:
-            await manager.send_alert("Warning! Gas levels are too high!")
+            #await manager.send_alert("Warning! Gas levels are too high!")
             await asyncio.sleep(2)  # Keep the connection alive
     except WebSocketDisconnect:
         manager.disconnect(websocket)
