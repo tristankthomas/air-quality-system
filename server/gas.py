@@ -58,7 +58,7 @@ def check_gas_level(sensor_data):
     try:
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
-        if gas_level > 900:
+        if gas_level > 50:
             if not alert_sent:
                 make_twilio_call()  # Trigger Twilio call
                 print("Phone Call\n")
