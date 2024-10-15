@@ -51,18 +51,23 @@ def read_gas_sensor():
             break
 
 loop = asyncio.get_event_loop()
+alert_sent = False
 
 def check_gas_level(sensor_data):
+    global alert_sent
     try:
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
-        if gas_level > 800:
-            #make_twilio_call()  # Trigger Twilio call
-            #asyncio.create_task(notify_alerts("Warning! Gas levels are too high!"))  # Send alert notification
-            #time.sleep(300)  # Sleep for 5 minutes
-            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high!"), loop)
-            print("Phone Call\n")
+        if gas_level > 900:
+            if not alert_sent:
+                make_twilio_call()  # Trigger Twilio call
+                print("Phone Call\n")
+                alert_sent = True
+            
+            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high! Calling 000"), loop)
         else:
+            if alert_sent:
+                alert_sent = False
             asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level"), loop)
     except json.JSONDecodeError:
         print("Error decoding JSON from sensor")
