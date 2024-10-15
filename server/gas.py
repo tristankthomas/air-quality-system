@@ -5,6 +5,7 @@ import json
 from fastapi.middleware.cors import CORSMiddleware
 from twilio.rest import Client
 import time
+import asyncio
 
 app = FastAPI()
 device = "ttyUSB0"
@@ -54,9 +55,10 @@ def check_gas_level(sensor_data):
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
         if gas_level > 800:
-            make_twilio_call()  # Trigger Twilio call
-            time.sleep(300)
-            print("Sleeping\n")
+            #make_twilio_call()  # Trigger Twilio call
+            #asyncio.create_task(notify_alerts("Warning! Gas levels are too high!"))  # Send alert notification
+            #time.sleep(300)  # Sleep for 5 minutes
+            print("Phone Call\n")
     except json.JSONDecodeError:
         print("Error decoding JSON from sensor")
 
@@ -84,20 +86,28 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_data(self, data: str):
+    async def send_alert(self, message: str):
         for connection in self.active_connections:
-            await connection.send_text(data)
+            await connection.send_text(message)
+            print(f"Message sent to: {connection.client}")
 
-manager = ConnectionManager()
 
-# WebSocket route to send gas sensor data in real-time
-@app.websocket("/ws/gas-sensor")
-async def websocket_endpoint(websocket: WebSocket):
+manager = ConnectionManager()  # Instance of ConnectionManager to manage WebSocket connections
+
+# Notify all connected WebSocket clients when a call is made
+async def notify_alerts(message: str):
+    await manager.send_alert(message)
+    print("Alert notification sent.")
+
+# WebSocket route for alert notifications
+@app.websocket("/ws/alerts")
+async def websocket_alerts_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    print("CONNECTED\n")
     try:
         while True:
-            if sensor_data:
-                await manager.send_data(sensor_data)  # Send the JSON data as received
+            await manager.send_alert("Warning! Gas levels are too high!")
+            await asyncio.sleep(2)  # Keep the connection alive
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
@@ -108,3 +118,4 @@ def get_gas_reading():
         print(sensor_data)
         return {"data": json.loads(sensor_data)}  # Return the parsed JSON data
     return {"message": "No sensor data available yet"}
+
