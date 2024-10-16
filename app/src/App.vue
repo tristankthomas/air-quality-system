@@ -1,17 +1,15 @@
 <template>
   <div id="app">
     <SensorReadings />
-    <ChartComponent />
   </div>
 </template>
 
 <script>
-import ChartComponent from './components/ChartComponent.vue'
 import SensorReadings from './components/SensorReadings.vue'
 
 export default {
   name: 'App',
-  components: { ChartComponent, SensorReadings }
+  components: { SensorReadings }
 }
 </script>
 

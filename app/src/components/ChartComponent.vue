@@ -1,10 +1,6 @@
 <template>
   <div>
-    <Line
-      id="chart"
-      :options="chartOptions"
-      :data="chartData"
-    />
+    <Line id="chart" :options="chartOptions" :data="chartData" />
   </div>
 </template>
 
@@ -31,6 +27,15 @@ export default {
         ]
       },
       chartOptions: {
+        plugins: {
+          legend: {
+            position: 'right',
+          }
+        },
+        title: {
+          display: true,
+          text: 'Real-Time User Data'
+        },
         responsive: true,
         maintainAspectRatio: false
       }
