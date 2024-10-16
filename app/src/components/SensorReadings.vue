@@ -1,3 +1,17 @@
+<template>
+  <div>
+    <h1>Sensor Readings</h1>
+    <div v-if="sensorData">
+      <p>Gas: {{ sensorData.data.gas }}</p>
+      <p>Air: {{ sensorData.data.air }}</p>
+      <p>Temperature: {{ sensorData.data.temp }} °C</p>
+    </div>
+    <p v-else>Loading...</p>
+    <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
+  </div>
+</template>
+
+
 <script>
 import axios from 'axios';  // Import axios for making HTTP requests
 
@@ -67,18 +81,6 @@ export default {
 };
 </script>
 
-<template>
-  <div>
-    <h1>Sensor Readings</h1>
-    <div v-if="sensorData">
-      <p>Gas: {{ sensorData.data.gas }}</p>
-      <p>Air: {{ sensorData.data.air }}</p>
-      <p>Temperature: {{ sensorData.data.temp }} °C</p>
-    </div>
-    <p v-else>Loading...</p>
-    <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
-  </div>
-</template>
 
 <style scoped>
 h1 {
