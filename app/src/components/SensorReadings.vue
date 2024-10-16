@@ -14,6 +14,7 @@
       :key="chartKey"
       :data="chartData"
       :options="chartOptions"
+      ref="lineChart"
     />
     </div >
   </div>
@@ -51,6 +52,20 @@ export default {
             fill: false, // Do not fill under the line
             tension: 0.1 // Smooth line
           },
+          {
+            label: 'Gas Level', // Data label
+            data: [], // Y-axis data points for gas
+            borderColor: '#FF6384', // Line color for gas
+            fill: false, // Do not fill under the line
+            tension: 0.1 // Smooth line
+          },
+          {
+            label: 'Air Quality', // Data label
+            data: [], // Y-axis data points for air quality
+            borderColor: '#FFCE56', // Line color for air
+            fill: false, // Do not fill under the line
+            tension: 0.1 // Smooth line
+          }
         ]
       },
       chartOptions: {
@@ -102,6 +117,8 @@ export default {
       // Push new temperature reading to the readings array
        this.readings.push({
         temp: data.temp,
+        gas: data.gas,
+        air: data.air,
         timestamp: new Date().toLocaleTimeString(), // Store the timestamp
       });
 
@@ -112,6 +129,8 @@ export default {
       
       this.chartData.labels = [...this.readings.map(reading => reading.timestamp)]; // Create a new array for labels
       this.chartData.datasets[0].data = [...this.readings.map(reading => reading.temp)];
+      this.chartData.datasets[1].data = [...this.readings.map(reading => reading.gas)];
+      this.chartData.datasets[2].data = [...this.readings.map(reading => reading.air)];
       // Update chart data
       console.log('Chart data updated:', this.chartData);
 
