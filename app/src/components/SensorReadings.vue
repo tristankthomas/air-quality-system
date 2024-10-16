@@ -9,6 +9,7 @@
     <p v-else>Loading...</p>
     <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
     <Line
+      v-if="readings.length > 0"
       :key="chartKey"
       :data="chartData"
       :options="chartOptions"
@@ -37,13 +38,13 @@ export default {
       ws: null,
       ipAddress: '172.20.10.2',
       wsMessage: '',
-      readings: [10,5,2,12,5],
+      readings: [],
       chartData: {
         labels: ['1', '2', '3', '4', '5'], // X-axis labels (timestamps)
         datasets: [
           {
             label: 'Temperature (°C)', // Data label
-            data: [10,5,2,12,5], // Y-axis data points for temperature
+            data: [], // Y-axis data points for temperature
             borderColor: '#42A5F5', // Line color
             fill: false, // Do not fill under the line
             tension: 0.1 // Smooth line
@@ -97,16 +98,21 @@ export default {
     updateChartData(data) {
       // Push new readings to the readings array
       // Push new temperature reading to the readings array
-      this.readings.push(data.temp);
+       this.readings.push({
+        temp: data.temp,
+        timestamp: new Date().toLocaleTimeString(), // Store the timestamp
+      });
 
       // Limit to the last 5 readings
-      if (this.readings.length > 5) {
+      if (this.readings.length > 20) {
         this.readings.shift(); // Remove the oldest reading
       }
-
+      
+      this.chartData.labels = [...this.readings.map(reading => reading.timestamp)]; // Create a new array for labels
+      this.chartData.datasets[0].data = [...this.readings.map(reading => reading.temp)];
       // Update chart data
-      this.chartData.datasets[0].data = [...this.readings]; // Use spread operator for reactivity
       console.log('Chart data updated:', this.chartData);
+
       this.chartKey++;
       //this.chartData.datasets[1].data = this.readings.map(reading => reading.gas);
       //this.chartData.datasets[2].data = this.readings.map(reading => reading.air);
