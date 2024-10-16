@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <GasDisplay />
+    <SensorReadings />
+    <ChartComponent />
   </div>
 </template>
 
 <script>
-import GasDisplay from './components/GasDisplay.vue';
+import ChartComponent from './components/ChartComponent.vue'
+import SensorReadings from './components/SensorReadings.vue'
 
 export default {
   name: 'App',
-  components: {
-    GasDisplay
-  }
+  components: { ChartComponent, SensorReadings }
 }
 </script>
 

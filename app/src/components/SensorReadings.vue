@@ -2,7 +2,7 @@
 import axios from 'axios';  // Import axios for making HTTP requests
 
 export default {
-  name: 'GasReading',
+  name: 'SensorReadings',
   data() {
     return {
       sensorData: null,  // Store sensor data
@@ -15,7 +15,7 @@ export default {
   methods: {
     fetchSensorData() {
       // Make an HTTP GET request to fetch sensor data
-      axios.get('http://172.20.10.2:8000/gas-reading')
+      axios.get('http://192.168.0.245:8000/sensor-readings')
         .then((response) => {
           this.sensorData = response.data;  // Update the sensorData with the response
           console.log('Sensor Data:', this.sensorData);
@@ -26,7 +26,7 @@ export default {
     },
     setupWebSocket() {
       // Create WebSocket connection
-      this.ws = new WebSocket('ws://172.20.10.2:8000/ws/alerts');
+      this.ws = new WebSocket('ws://192.168.0.245:8000/ws/alerts');
 
       this.ws.onmessage = (event) => {
         const message = event.data;

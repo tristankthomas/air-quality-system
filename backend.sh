@@ -1,3 +1,3 @@
 #!/bin/bash
-screen -dmS backend bash -c 'source venv/bin/activate && uvicorn server.gas:app --host 172.20.10.2 --port 8000'
+screen -dmS backend bash -c 'source venv/bin/activate && uvicorn server.sensor_data:app --host 192.168.0.245 --port 8000'
 

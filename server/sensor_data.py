@@ -58,9 +58,9 @@ def check_gas_level(sensor_data):
     try:
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
-        if gas_level > 50:
+        if gas_level >= 900:
             if not alert_sent:
-                make_twilio_call()  # Trigger Twilio call
+                #make_twilio_call()  # Trigger Twilio call
                 print("Phone Call\n")
                 alert_sent = True
             
@@ -113,7 +113,6 @@ async def notify_alerts(message: str):
 @app.websocket("/ws/alerts")
 async def websocket_alerts_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
-    print("CONNECTED\n")
     try:
         while True:
             #await manager.send_alert("Warning! Gas levels are too high!")
@@ -122,7 +121,7 @@ async def websocket_alerts_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 # API route to return the latest sensor data
-@app.get("/gas-reading")
+@app.get("/sensor-readings")
 def get_gas_reading():
     if sensor_data:
         print(sensor_data)
