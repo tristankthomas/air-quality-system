@@ -23,11 +23,11 @@
 
 
 <script>
-import axios from 'axios';  // Import axios for making HTTP requests
-import { Line } from 'vue-chartjs';  // Import the Line chart component
+import axios from 'axios';
+import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
 
-// Register necessary Chart.js components
+// register chartjs components for line graph
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
 
@@ -36,37 +36,37 @@ export default {
   components: { Line },
   data() {
     return {
-      chartKey: 0,
-      sensorData: null,  // Store sensor data
-      intervalId: null,  // Store the interval ID for clearing later
+      chartKey: 0, // forces update of chart
+      sensorData: null,
+      intervalId: null,
       ws: null,
-      ipAddress: '172.20.10.3',
+      ipAddress: '172.20.10.3', // backend ip address
       wsMessage: '',
       messageColour: '',
       readings: [],
       chartData: {
-        labels: [], // X-axis labels (timestamps)
+        labels: [], // timestamps
         datasets: [
           {
-            label: 'Temperature (°C)', // Data label
-            data: [], // Y-axis data points for temperature
-            borderColor: '#42A5F5', // Line color
-            fill: false, // Do not fill under the line
-            tension: 0.1 // Smooth line
+            label: 'Temperature (°C)', 
+            data: [],
+            borderColor: '#42A5F5', // blue
+            fill: false,
+            tension: 0.1
           },
           {
-            label: 'Gas Level (ppm)', // Data label
-            data: [], // Y-axis data points for gas
-            borderColor: '#FF6384', // Line color for gas
-            fill: false, // Do not fill under the line
-            tension: 0.1 // Smooth line
+            label: 'Gas Level (ppm)',
+            data: [],
+            borderColor: '#FF6384', // red
+            fill: false,
+            tension: 0.1
           },
           {
-            label: 'Air Quality (ppm)', // Data label
-            data: [], // Y-axis data points for air quality
-            borderColor: '#FFCE56', // Line color for air
-            fill: false, // Do not fill under the line
-            tension: 0.1 // Smooth line
+            label: 'Air Quality (ppm)',
+            data: [],
+            borderColor: '#FFCE56', // yellow
+            fill: false,
+            tension: 0.1
           }
         ]
       },
@@ -74,13 +74,13 @@ export default {
         responsive: true,
         plugins: {
           legend: {
-            display: true, // Display the legend
+            display: true,
           }
         },
         scales: {
           y: {
-            beginAtZero: true,  // Ensures Y-axis starts at 0
-            min: 0  // Forces Y-axis minimum value to 0
+            beginAtZero: true,
+            min: 0
           }
         }
       }
@@ -88,12 +88,13 @@ export default {
   },
   methods: {
     fetchSensorData() {
-      // Make an HTTP GET request to fetch sensor data
+      // get sensor readings from server using get request
       axios.get(`http://${this.ipAddress}:8000/sensor-readings`)
         .then((response) => {
-          this.sensorData = response.data;  // Update the sensorData with the response
+          // update data
+          this.sensorData = response.data;  
           console.log('Sensor Data:', this.sensorData);
-
+          // update chart with data
           this.updateChartData(this.sensorData.data);
         })
         .catch((error) => {
@@ -101,27 +102,24 @@ export default {
         });
     },
     setupWebSocket() {
-      // Create WebSocket connection
+      // create WebSocket connection with server
       this.ws = new WebSocket(`ws://${this.ipAddress}:8000/ws/alerts`);
 
       this.ws.onmessage = (event) => {
-         const message = JSON.parse(event.data);  // Parse the JSON string
+         const message = JSON.parse(event.data);
          console.log('Received WebSocket message:', message);
-
-         this.wsMessage = message.data;           // Access the message content
+         
+         // unpack contents
+         this.wsMessage = message.data;
          this.messageColour = message.colour; 
-         console.log('Message colour:', this.messageColour);
-        // You can handle the message, e.g., display an alert or update the UI
       };
     
       this.ws.onclose = () => {
-        console.log('WebSocket connection closed. Attempting to reconnect...');
-        // Optionally implement reconnection logic here
+        console.log('WebSocket connection closed.');
       };
     },
     updateChartData(data) {
-      // Push new readings to the readings array
-      // Push new temperature reading to the readings array
+      // add data to readings
        this.readings.push({
         temp: data.temp,
         gas: data.gas,
@@ -129,42 +127,39 @@ export default {
         timestamp: new Date().toLocaleTimeString(), // Store the timestamp
       });
 
-      // Limit to the last 5 readings
+      // only present last 20 readings
       if (this.readings.length > 20) {
-        this.readings.shift(); // Remove the oldest reading
+        this.readings.shift();
       }
       
-      this.chartData.labels = [...this.readings.map(reading => reading.timestamp)]; // Create a new array for labels
+      // reactivity notation used to help update chart when changed
+      this.chartData.labels = [...this.readings.map(reading => reading.timestamp)];
       this.chartData.datasets[0].data = [...this.readings.map(reading => reading.temp)];
       this.chartData.datasets[1].data = [...this.readings.map(reading => reading.gas)];
       this.chartData.datasets[2].data = [...this.readings.map(reading => reading.air)];
-      // Update chart data
-      console.log('Chart data updated:', this.chartData);
-
+      // forces chart to update
       this.chartKey++;
-      //this.chartData.datasets[1].data = this.readings.map(reading => reading.gas);
-      //this.chartData.datasets[2].data = this.readings.map(reading => reading.air);
     }
   },
   mounted() {
-    // Fetch data immediately when the component is mounted
+
     this.fetchSensorData();
 
-    // Set up polling to fetch data every 1 second (1000ms)
+    // polls for data every second
     this.intervalId = setInterval(() => {
       this.fetchSensorData();
     }, 1000);
     
 
-    // Set up WebSocket connection
+    // creates WebSocket connection
     this.setupWebSocket();
   },
   beforeUnmount() {
-    // Clear the polling interval when the component is unmounted
+    // clear polling interval
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
-    // Close WebSocket connection
+    // close WebSocket connection
     if (this.ws) {
       this.ws.close();
     }
@@ -178,9 +173,8 @@ h1 {
   margin: 10px 0;
 }
 p {
-  font-size: 18px; /* Optional: increase font size for the display */
+  font-size: 18px;
   color: #0f9ed5;
-/*color: #42b983;*/ /* Optional: color for better visibility */
 }
 
 </style>
