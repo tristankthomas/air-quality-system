@@ -40,7 +40,7 @@ export default {
       sensorData: null,  // Store sensor data
       intervalId: null,  // Store the interval ID for clearing later
       ws: null,
-      ipAddress: '172.20.10.2',
+      ipAddress: '172.20.10.3',
       wsMessage: '',
       messageColour: '',
       readings: [],
@@ -89,7 +89,7 @@ export default {
   methods: {
     fetchSensorData() {
       // Make an HTTP GET request to fetch sensor data
-      axios.get('http://172.20.10.3:8000/sensor-readings')
+      axios.get('http://${ipAddress}:8000/sensor-readings')
         .then((response) => {
           this.sensorData = response.data;  // Update the sensorData with the response
           console.log('Sensor Data:', this.sensorData);
@@ -102,7 +102,7 @@ export default {
     },
     setupWebSocket() {
       // Create WebSocket connection
-      this.ws = new WebSocket('ws://172.20.10.3:8000/ws/alerts');
+      this.ws = new WebSocket('ws://${ipAddress}:8000/ws/alerts');
 
       this.ws.onmessage = (event) => {
          const message = JSON.parse(event.data);  // Parse the JSON string
