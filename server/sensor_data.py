@@ -91,9 +91,13 @@ class ConnectionManager:
         self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
+        if self.active_connections:
+            last_connection = self.active_connections[-1]  # Get the last connection
+            self.active_connections.remove(last_connection)  # Remove it
+            print("Removed last connection:", str(last_connection))
         await websocket.accept()
         self.active_connections.append(websocket)
-
+        print("Active connections:", [str(conn) for conn in self.active_connections])
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
@@ -119,9 +123,9 @@ async def websocket_alerts_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            #await manager.send_alert("Warning! Gas levels are too high!")
             await asyncio.sleep(2)  # Keep the connection alive
     except WebSocketDisconnect:
+        print("SOCKET CLOSING\n")
         manager.disconnect(websocket)
 
 # API route to return the latest sensor data
