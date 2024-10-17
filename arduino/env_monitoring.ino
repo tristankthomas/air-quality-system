@@ -5,6 +5,10 @@
 #define TEMP_SENSOR_TYPE DHT11 // Declaring the type of DHT sensor we are using (DHT11)
 #define GAS_LIMIT 200 // set to 300 for real-world
 #define AIR_LIMIT 100 // need to calibrate it to CO2 for real-world
+#define MIN_FAN_SPEED 168 // pwm value approx 65% duty cycle
+#define MAX_FAN_SPEED 255 // pwm value at 100% duty cycle (always 1)
+#define MIN_TEMP 15 // min temp @ 0 duty cycle
+#define MAX_TEMP 30 // max temp (fan will turn on at approx 25 degrees)
 
 const int gasSensorPin = 0; // analog
 const int airsensorPin = 1; // analog
@@ -49,12 +53,12 @@ void loop() {
 
   float airReading = analogRead(airsensorPin); // Reading MQ135 air quality
   float gasReading = analogRead(gasSensorPin);  // Reading MQ2 gas levels
-  int fanSpeed = map(tempReading, 15, 30, 0, 255);
-  fanSpeed = constrain(fanSpeed, 0, 255);
-  // Adjust the percentage to be around 0 when fanSpeed is around 168
-  float adjustedSpeed = fanSpeed - 168;
-  float speedpercent = (adjustedSpeed / double(87)) * double(100);  // 87 is the range from 168 to 255
-  speedpercent = constrain(speedpercent, 0, 100);  // Ensure the percentage stays between 0 and 100
+  int fanSpeed = map(tempReading, MIN_TEMP, MAX_TEMP, 0, MAX_FAN_SPEED);
+  fanSpeed = constrain(fanSpeed, 0, MAX_FAN_SPEED);
+  // shifting percentage to suit our upper range
+  float adjustedSpeed = fanSpeed - MIN_FAN_SPEED;
+  float speedpercent = (adjustedSpeed / double(MAX_FAN_SPEED - MIN_FAN_SPEED)) * double(100);
+  speedpercent = constrain(speedpercent, 0, 100);
 
 
   // Send data to server 
@@ -79,11 +83,11 @@ void loop() {
 // control fan speed based on temperature
 void control_fan(int fanSpeed) {
   // PWM to the enable pin to alter speed
-  if (fanSpeed > 168) {
+  if (fanSpeed > MIN_FAN_SPEED) {
     analogWrite(motorEnablePin, fanSpeed);
     servo_rotate(); // rotate servo back and forth
-    
   } else {
+    // fan and servo stationary
     analogWrite(motorEnablePin, 0);
   }
  
