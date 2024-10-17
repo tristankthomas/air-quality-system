@@ -2,13 +2,14 @@
   <div>
     <h1>Sensor Readings</h1>
     <div v-if="sensorData">
-      <p>Gas: {{ sensorData.data.gas }}</p>
-      <p>Air: {{ sensorData.data.air }}</p>
+      <p>Gas: {{ sensorData.data.gas }} ppm</p>
+      <p>Air: {{ sensorData.data.air }} ppm</p>
       <p>Temperature: {{ sensorData.data.temp }} °C</p>
+      <p>Fan Speed: {{ sensorData.data.speed }} %</p>
     </div>
     <p v-else>Loading...</p>
     <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
-    <div style="max-width: 1000px; max-height: 500px; overflow: hidden; margin: 20px auto;">
+    <div style="max-width: 700px; max-height: 500px; overflow: hidden; margin: 20px auto;">
     <Line
       v-if="readings.length > 0"
       :key="chartKey"
@@ -41,9 +42,10 @@ export default {
       ws: null,
       ipAddress: '172.20.10.2',
       wsMessage: '',
+      messageColour: '',
       readings: [],
       chartData: {
-        labels: ['1', '2', '3', '4', '5'], // X-axis labels (timestamps)
+        labels: [], // X-axis labels (timestamps)
         datasets: [
           {
             label: 'Temperature (°C)', // Data label
@@ -53,14 +55,14 @@ export default {
             tension: 0.1 // Smooth line
           },
           {
-            label: 'Gas Level', // Data label
+            label: 'Gas Level (ppm)', // Data label
             data: [], // Y-axis data points for gas
             borderColor: '#FF6384', // Line color for gas
             fill: false, // Do not fill under the line
             tension: 0.1 // Smooth line
           },
           {
-            label: 'Air Quality', // Data label
+            label: 'Air Quality (ppm)', // Data label
             data: [], // Y-axis data points for air quality
             borderColor: '#FFCE56', // Line color for air
             fill: false, // Do not fill under the line
@@ -73,10 +75,12 @@ export default {
         plugins: {
           legend: {
             display: true, // Display the legend
-          },
-          title: {
-            display: true,
-            text: 'Sensor Readings Over Time' // Title of the chart
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,  // Ensures Y-axis starts at 0
+            min: 0  // Forces Y-axis minimum value to 0
           }
         }
       }
@@ -85,7 +89,7 @@ export default {
   methods: {
     fetchSensorData() {
       // Make an HTTP GET request to fetch sensor data
-      axios.get('http://192.168.0.245:8000/sensor-readings')
+      axios.get('http://172.20.10.2:8000/sensor-readings')
         .then((response) => {
           this.sensorData = response.data;  // Update the sensorData with the response
           console.log('Sensor Data:', this.sensorData);
@@ -98,12 +102,15 @@ export default {
     },
     setupWebSocket() {
       // Create WebSocket connection
-      this.ws = new WebSocket('ws://192.168.0.245:8000/ws/alerts');
+      this.ws = new WebSocket('ws://172.20.10.2:8000/ws/alerts');
 
       this.ws.onmessage = (event) => {
-        const message = event.data;
-        console.log('Received WebSocket message:', message);
-        this.wsMessage = message;
+         const message = JSON.parse(event.data);  // Parse the JSON string
+         console.log('Received WebSocket message:', message);
+
+         this.wsMessage = message.data;           // Access the message content
+         this.messageColour = message.colour; 
+         console.log('Message colour:', this.messageColour);
         // You can handle the message, e.g., display an alert or update the UI
       };
     
@@ -168,11 +175,12 @@ export default {
 
 <style scoped>
 h1 {
-  margin: 20px 0;
+  margin: 10px 0;
 }
 p {
-  font-size: 24px; /* Optional: increase font size for the display */
-  color: #42b983; /* Optional: color for better visibility */
+  font-size: 18px; /* Optional: increase font size for the display */
+  color: #0f9ed5;
+/*color: #42b983;*/ /* Optional: color for better visibility */
 }
 
 </style>

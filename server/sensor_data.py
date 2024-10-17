@@ -38,7 +38,7 @@ ser = serial.Serial(f'/dev/{device}', 9600, timeout=1)
 sensor_data = None
 
 # Function to continuously read from the serial port
-def read_gas_sensor():
+def read_sensors():
     global sensor_data
     while True:
         try:
@@ -58,17 +58,17 @@ def check_gas_level(sensor_data):
     try:
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
-        if gas_level >= 900:
+        if gas_level >= 45:
             if not alert_sent:
-                #make_twilio_call()  # Trigger Twilio call
+                make_twilio_call()  # Trigger Twilio call
                 print("Phone Call\n")
                 alert_sent = True
             
-            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high! Calling 000"), loop)
+            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high! Calling 000", "#FF0000"), loop)
         else:
-            if alert_sent:
-                alert_sent = False
-            asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level"), loop)
+            #if alert_sent:
+             #   alert_sent = False
+            asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level", "#42b983"), loop)
     except json.JSONDecodeError:
         print("Error decoding JSON from sensor")
 
@@ -81,7 +81,7 @@ def make_twilio_call():
     print(f"Call initiated: {call.sid}")
 
 # Start the thread for reading sensor data
-thread = threading.Thread(target=read_gas_sensor)
+thread = threading.Thread(target=read_sensors)
 thread.daemon = True
 thread.start()
 
@@ -96,17 +96,20 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_alert(self, message: str):
+    async def send_alert(self, message: str, colour: str):
+        message_data = {
+            "data": message,
+            "colour": colour
+        }
+        # Send the alert message with color to all connected clients
         for connection in self.active_connections:
-            await connection.send_text(message)
-            print(f"Message sent to: {connection.client}")
-
+            await connection.send_text(json.dumps(message_data))
 
 manager = ConnectionManager()  # Instance of ConnectionManager to manage WebSocket connections
 
 # Notify all connected WebSocket clients when a call is made
-async def notify_alerts(message: str):
-    await manager.send_alert(message)
+async def notify_alerts(message: str, colour: str):
+    await manager.send_alert(message, colour)
     print("Alert notification sent.")
 
 # WebSocket route for alert notifications
