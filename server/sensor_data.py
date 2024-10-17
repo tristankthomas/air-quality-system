@@ -78,7 +78,7 @@ def check_gas_level(sensor_data):
 def make_twilio_call():
     # makes phone call using Twilio API using automated voice
     call = twilio_client.calls.create(
-        twiml='<Response><Say>Warning! Gas levels are too high. Please check immediately!</Say></Response>',
+        twiml='<Response><Say>Warning! Gas levels are too high. Please check on Grandma immediately!</Say></Response>',
         to=recipient_phone_number,
         from_=twilio_phone_number
     )
