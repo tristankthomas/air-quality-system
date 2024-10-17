@@ -8,7 +8,7 @@ import time
 import asyncio
 
 app = FastAPI()
-device = "ttyUSB1"
+device = "ttyUSB0"
 
 # Twilio setup
 account_sid = 'ACf1e2638d9b882481cb81b7b232300c16'
@@ -20,7 +20,8 @@ recipient_phone_number = '+61490514927'
 origins = [
     "http://localhost:8080",  # Allow your Vue.js app running locally
     "http://172.20.10.2:8080",  # Allow your Vue.js app running on Raspberry Pi
-    "http://192.168.0.245:8080"
+    "http://192.168.0.245:8080",
+    "http://172.20.10.3:8080"
 ]
 
 app.add_middleware(

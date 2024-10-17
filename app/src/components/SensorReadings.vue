@@ -8,7 +8,7 @@
       <p>Fan Speed: {{ sensorData.data.speed }} %</p>
     </div>
     <p v-else>Loading...</p>
-    <p v-if="wsMessage" class="ws-message" :style="{ color: messageColour + ' !important', fontSize: '18px' }">{{ wsMessage }}</p>
+    <p v-if="wsMessage" class="ws-message" :style="{ color: messageColour + ' !important', fontSize: '22px' }">{{ wsMessage }}</p>
     <div style="max-width: 900px; max-height: 700px; overflow: hidden; margin: 22px auto;">
     <Line
       v-if="readings.length > 0"
@@ -89,7 +89,7 @@ export default {
   methods: {
     fetchSensorData() {
       // Make an HTTP GET request to fetch sensor data
-      axios.get('http://172.20.10.2:8000/sensor-readings')
+      axios.get('http://172.20.10.3:8000/sensor-readings')
         .then((response) => {
           this.sensorData = response.data;  // Update the sensorData with the response
           console.log('Sensor Data:', this.sensorData);
@@ -102,7 +102,7 @@ export default {
     },
     setupWebSocket() {
       // Create WebSocket connection
-      this.ws = new WebSocket('ws://172.20.10.2:8000/ws/alerts');
+      this.ws = new WebSocket('ws://172.20.10.3:8000/ws/alerts');
 
       this.ws.onmessage = (event) => {
          const message = JSON.parse(event.data);  // Parse the JSON string
