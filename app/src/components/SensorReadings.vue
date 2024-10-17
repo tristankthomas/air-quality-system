@@ -8,8 +8,8 @@
       <p>Fan Speed: {{ sensorData.data.speed }} %</p>
     </div>
     <p v-else>Loading...</p>
-    <p v-if="wsMessage" class="ws-message">{{ wsMessage }}</p>
-    <div style="max-width: 700px; max-height: 500px; overflow: hidden; margin: 20px auto;">
+    <p v-if="wsMessage" class="ws-message" :style="{ color: messageColour + ' !important', fontSize: '18px' }">{{ wsMessage }}</p>
+    <div style="max-width: 900px; max-height: 700px; overflow: hidden; margin: 22px auto;">
     <Line
       v-if="readings.length > 0"
       :key="chartKey"

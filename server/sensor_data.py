@@ -8,7 +8,7 @@ import time
 import asyncio
 
 app = FastAPI()
-device = "ttyUSB0"
+device = "ttyUSB1"
 
 # Twilio setup
 account_sid = 'ACf1e2638d9b882481cb81b7b232300c16'
@@ -58,17 +58,17 @@ def check_gas_level(sensor_data):
     try:
         data_json = json.loads(sensor_data)
         gas_level = int(data_json.get("gas", 0))  # Adjust this key to match your data structure
-        if gas_level >= 45:
+        if gas_level >= 200:
             if not alert_sent:
                 make_twilio_call()  # Trigger Twilio call
                 print("Phone Call\n")
                 alert_sent = True
             
-            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high! Calling 000", "#FF0000"), loop)
+            asyncio.run_coroutine_threadsafe(notify_alerts("Warning! Gas levels are too high! Calling emergency contact.", "#FF0000"), loop)
         else:
-            #if alert_sent:
-             #   alert_sent = False
-            asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level", "#42b983"), loop)
+            if alert_sent:
+                alert_sent = False
+            asyncio.run_coroutine_threadsafe(notify_alerts("Gas is at a safe level!", "#42b983"), loop)
     except json.JSONDecodeError:
         print("Error decoding JSON from sensor")
 
